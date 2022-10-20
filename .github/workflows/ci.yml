@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     types: [synchronize, opened]
 
@@ -13,10 +13,16 @@ jobs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
+      - name: Extract directories with differences
+        id: diff-dirs
+        run: |
+          diffs=$(git diff remotes/origin/${{ github.base_ref }}..HEAD --diff-filter=ACDMR --name-only)
+          echo $diffs
       - name: Generate matrix
-        id: generate-matrix        
+        id: generate-matrix
         run: |
           echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-latest
     needs: metadata
