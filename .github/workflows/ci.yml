@@ -15,15 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # 0 indicates all history for all branches and tags.
       - name: Extract directories with differences
-        id: diff-dirs
+        id: diff_dirs
         run: |
-          #git fetch
           echo "Pull request's base branch is: ${{ github.base_ref }}"
           echo "This branch is ${GITHUB_REF#refs/heads/}"
           diffs=$(git diff remotes/origin/${{ github.base_ref }}..HEAD --diff-filter=ACDMR --name-only)
           echo $diffs
+          echo "diffs=$diffs" >> $GITHUB_OUTPUT
+      - name: Iterate
+        run: |
+          for diff in "${{steps.diff_dirs.outputs.diffs}}"; do
+            dir=$(echo $diff | awk -F/ '{ if(NF>=2){printf("%s/%s",$1,$2)} }')
+            if [ -n "$dir" ]; then
+              echo "dir = $dir"
+              fi
+            fi
+          done
       - name: Generate matrix
         id: generate-matrix
         run: |
