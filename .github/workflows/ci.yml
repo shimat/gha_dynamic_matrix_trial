@@ -30,13 +30,16 @@ jobs:
           for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
             top_dir_names+=($(echo $file | awk -F/ '{printf("%s",$1)}'))
           done
-          echo "${top_dir_names[@]}"
           top_dir_names=($( printf "%s\n" "${top_dir_names[@]}" | sort -u ))
-          echo "${top_dir_names[@]}"
-          # service_name/ 以下のmodules以外のディレクトリを列挙
+          echo "diff_dirs = ( ${top_dir_names[@]} )"
+
+          # service_name/ 以下の、modules以外のディレクトリを列挙
+          #matrix_json="matrix={\"include\":["
           for dir in "${top_dir_names[@]}"; do
-            envs=$(ls -d ${dir}/*/ | grep -v modules || true)
-            echo "${envs[@]}"
+            for env in $(ls -d ${dir}/*/ | grep -v modules || true); do
+              echo "  $env"
+            done
+            #echo "${envs[@]}"
           done
 
       - name: Generate matrix
