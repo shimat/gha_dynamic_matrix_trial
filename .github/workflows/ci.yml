@@ -34,13 +34,14 @@ jobs:
           echo "diff_dirs = ( ${top_dir_names[@]} )"
 
           # service_name/ 以下の、modules以外のディレクトリを列挙
-          #matrix_json="matrix={\"include\":["
+          matrix_json="matrix={\"include\":["
           for dir in "${top_dir_names[@]}"; do
             for env in $(ls -d ${dir}/*/ | grep -v modules || true); do
-              echo "  $env"
+              matrix_json+="{\"dir\":\"$dir\",\"env\":\"$env\"},"
             done
-            #echo "${envs[@]}"
           done
+          matrix_json="${matrix_json%?}]}"
+          echo $matrix_json
 
       - name: Generate matrix
         id: generate-matrix
