@@ -43,7 +43,7 @@ jobs:
           done
           matrix_json="${matrix_json%?}]}"
           echo $matrix_json
-          echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
       #- name: Generate matrix
       #  id: generate-matrix
       #  run: |
