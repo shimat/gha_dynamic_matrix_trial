@@ -21,7 +21,6 @@ jobs:
         uses: tj-actions/changed-files@eb136c70d4591e2ae2983990cc580db78ee8a278 # v32.1.2
         with:
           dir_names: true
-          json: true
           files_ignore: |
             .github
       - name: List all changed files
