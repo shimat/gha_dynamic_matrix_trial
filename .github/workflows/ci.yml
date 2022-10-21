@@ -27,7 +27,7 @@ jobs:
       - name: List all changed files
         run: |
           for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
-            base=$(basename)
+            base=$(basename $file)
             echo "file=$file, base=$base"
             if [ "$base" = "modules" ]; then
               ls -d ${file}/*/
