@@ -16,22 +16,18 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # 0 indicates all history for all branches and tags.
-      - name: Extract directories with differences
+      - name: Get changed directories
         id: diff_dirs
+        uses: tj-actions/changed-files@eb136c70d4591e2ae2983990cc580db78ee8a278 # v32.1.2
+        with:
+          dir_names: true
+          json: true
+          files_ignore: |
+            .github
+      - name: List all changed files
         run: |
-          echo "Pull request's base branch is: ${{ github.base_ref }}"
-          echo "This branch is ${GITHUB_REF#refs/heads/}"
-          diffs=$(git diff remotes/origin/${{ github.base_ref }}..HEAD --diff-filter=ACDMR --name-only)
-          echo $diffs
-          echo "diffs=$diffs" >> $GITHUB_OUTPUT
-      - name: Iterate
-        run: |
-          for diff in "${{steps.diff_dirs.outputs.diffs}}"; do
-            dir=$(echo $diff | awk -F/ '{ if(NF>=2){printf("%s/%s",$1,$2)} }')
-            if [ -n "$dir" ]; then
-              echo "dir = $dir"
-              fi
-            fi
+          for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
+            echo "$file"
           done
       - name: Generate matrix
         id: generate-matrix
