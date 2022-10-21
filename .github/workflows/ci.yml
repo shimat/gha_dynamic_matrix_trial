@@ -27,7 +27,11 @@ jobs:
       - name: List all changed files
         run: |
           for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
-            echo "$file"
+            base=$(basename)
+            echo "file=$file, base=$base"
+            if [ "$base" = "modules" ]; then
+              ls -d ${file}/*/
+            fi
           done
       - name: Generate matrix
         id: generate-matrix
