@@ -23,7 +23,8 @@ jobs:
           dir_names: true
           files_ignore: |
             .github
-      - name: List all changed files
+      - name: Generate matrix
+        id: generate-matrix
         run: |
           # 差分があったファイルのディレクトリ名を取得
           top_dir_names=()
@@ -37,16 +38,16 @@ jobs:
           matrix_json="matrix={\"include\":["
           for dir in "${top_dir_names[@]}"; do
             for env in $(ls -d ${dir}/*/ | grep -v modules || true); do
-              matrix_json+="{\"dir\":\"$dir\",\"env\":\"$env\"},"
+              matrix_json+="{\"dir\":\"$dir\",\"env\":\"$(basename $env)\"},"
             done
           done
           matrix_json="${matrix_json%?}]}"
           echo $matrix_json
-
-      - name: Generate matrix
-        id: generate-matrix
-        run: |
           echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+      #- name: Generate matrix
+      #  id: generate-matrix
+      #  run: |
+      #    echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
 
   build:
     runs-on: ubuntu-latest
@@ -59,5 +60,5 @@ jobs:
 
       - name: Run
         run: |
-          echo "project=${{ matrix.project }}"
-          echo "project=${{ matrix.config }}"
+          echo "project=${{ matrix.dir }}"
+          echo "project=${{ matrix.env }}"
