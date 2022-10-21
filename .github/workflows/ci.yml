@@ -35,7 +35,7 @@ jobs:
           echo "${top_dir_names[@]}"
           # service_name/ 以下のmodules以外のディレクトリを列挙
           for dir in "${top_dir_names[@]}"; do
-            envs=$(ls -d ${dir}/*/ | grep -v modules)
+            envs=$(ls -d ${dir}/*/ | grep -v modules || true)
             echo "${envs[@]}"
           done
 
