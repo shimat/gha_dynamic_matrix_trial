@@ -25,13 +25,20 @@ jobs:
             .github
       - name: List all changed files
         run: |
+          # 差分があったファイルのディレクトリ名を取得
+          top_dir_names=()
           for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
-            base=$(basename $file)
-            echo "file=$file, base=$base"
-            if [ "$base" = "modules" ]; then
-              ls -d ${file}/*/
-            fi
+            top_dir_names+=($(echo $x | awk -F/ '{printf("%s",$1)}'))
           done
+          echo "${top_dir_names[@]}"
+          top_dir_names=($( printf "%s\n" "${top_dir_names[@]}" | sort -u ))
+          echo "${top_dir_names[@]}"
+          # service_name/ 以下のmodules以外のディレクトリを列挙
+          for dir in "${top_dir_names[@]}"; do
+            envs=$(ls -d ${dir}/*/ | grep -v modules)
+            echo "${envs[@]}"
+          done
+
       - name: Generate matrix
         id: generate-matrix
         run: |
