@@ -2,23 +2,56 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
     types: [synchronize, opened]
 
 jobs:
   metadata:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 0 indicates all history for all branches and tags.
+      - name: Get changed directories
+        id: diff_dirs
+        uses: tj-actions/changed-files@eb136c70d4591e2ae2983990cc580db78ee8a278 # v32.1.2
+        with:
+          dir_names: true
+          files_ignore: |
+            .github
       - name: Generate matrix
-        id: generate-matrix        
+        id: generate-matrix
         run: |
-          echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+          # 差分があったファイルのディレクトリ名を取得
+          top_dir_names=()
+          for file in ${{ steps.diff_dirs.outputs.all_changed_files }}; do
+            top_dir_names+=($(echo $file | awk -F/ '{printf("%s",$1)}'))
+          done
+          top_dir_names=($( printf "%s\n" "${top_dir_names[@]}" | sort -u ))
+          echo "diff_dirs = ( ${top_dir_names[@]} )"
+
+          # service_name/ 以下の、modules以外のディレクトリを列挙
+          matrix_json="{\"include\":["
+          for dir in "${top_dir_names[@]}"; do
+            for env in $(ls -d ${dir}/*/ | grep -v modules || true); do
+              matrix_json+="{\"dir\":\"$dir\",\"env\":\"$(basename $env)\"},"
+            done
+          done
+          matrix_json="${matrix_json%?}]}"
+          echo $matrix_json
+          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+      #- name: Generate matrix
+      #  id: generate-matrix
+      #  run: |
+      #    echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: metadata
     strategy:
       matrix: ${{ fromJson(needs.metadata.outputs.matrix) }}
@@ -27,5 +60,5 @@ jobs:
 
       - name: Run
         run: |
-          echo "project=${{ matrix.project }}"
-          echo "project=${{ matrix.config }}"
+          echo "project=${{ matrix.dir }}"
+          echo "project=${{ matrix.env }}"
