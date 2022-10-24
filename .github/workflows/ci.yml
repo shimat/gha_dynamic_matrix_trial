@@ -37,7 +37,7 @@ jobs:
           # service_name/ 以下の、modules以外のディレクトリを列挙
           matrix_json="{\"include\":["
           for dir in "${top_dir_names[@]}"; do
-            if [ ! -e "dir/.actionignore" ]; then
+            if [ ! -e "${dir}/.actionignore" ]; then
               for env in $(ls -d ${dir}/*/ | grep -v modules || true); do
                 matrix_json+="{\"dir\":\"$dir\",\"env\":\"$(basename $env)\"},"
               done
